@@ -478,28 +478,30 @@ const IP_DATA = [
   {
     name: '小马宝莉',
     emoji: '🦄',
-    img: 'IMG_20260430_230658.jpg',          // ← 填写图片路径如 'imgs/mlp.png'，留空则用emoji
-    fallbackEmoji: '🐴',
+    img: 'IMG_20260430_230658.jpg',
+    fallbackEmoji: '🦄',
     quote: '知道吗，这很怪，不管别人说了多少次，你很棒，但只要你自己心里不觉得，无论多少夸奖都没有意义。有时候要对自己有信心，你就必须抛开过去，这样当你有机会展现自己的时候，你就能点亮整片天空。',
-    from: '—— 所有爱你的小马'
+    from: '——所有爱你的小马'
   },
   {
     name: '飞天小女警',
-    emoji: '飞天小女警_泡泡.png',
+    emoji: '🌸',
     img: 'IMG_20260430_230949.jpg',
-    fallbackEmoji: '👧🏻',
+    titleImg: '飞天小女警_泡泡.png',
+    fallbackEmoji: '🌸',
     quote: '糖，香料，所有美好的事物就是制造完美小女孩的配方。',
-    from: '—— 花花&泡泡&毛毛'
+    from: '——花花&泡泡&毛毛'
   },
   {
     name: '跃动青春',
-    emoji: '鞋子.png',
+    emoji: '🏃',
     img: 'IMG_20260430_230933.jpg',
-    fallbackEmoji: '⚽',
+    titleImg: '鞋子.png',
+    fallbackEmoji: '🏃',
     quote: '活着本来没有什么意义，但是只要活着，就可以找到有趣的事情，就像你发现了花，我又发现了你一样。',
-    from: '—— 跃动青春的大家'
-  },
-  {
+    from: '——跃动青春的大家'
+  }
+];
     name: '吉伊卡哇',
     emoji: '💜',
     img: 'IMG_20260430_230626.jpg',
@@ -684,7 +686,12 @@ function openLetter(idx) {
   }
 
   // 填充内容
-  document.getElementById('cardIpName').textContent = item.name + ' ' + item.emoji;
+ const titleArea = document.getElementById('cardIpName');
+if (item.titleImg) {
+    titleArea.innerHTML = item.name + ` <img src="${item.titleImg}" style="height:1.3em; vertical-align:middle; border-radius:4px;">`;
+} else {
+    titleArea.textContent = item.name + ' ' + item.emoji;
+}
 
   // 图片区 — 有图显示图，无图用emoji回退
   const imgArea = document.getElementById('cardImgArea');
