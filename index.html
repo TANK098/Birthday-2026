@@ -685,21 +685,21 @@ function openLetter(idx) {
     currentActiveEnv.classList.add('active-env');
   }
 
-  // 填充内容
- const titleArea = document.getElementById('cardIpName');
+ // 填充内容
+const titleArea = document.getElementById('cardIpName');
 if (item.titleImg) {
     titleArea.innerHTML = item.name + ` <img src="${item.titleImg}" style="height:1.3em; vertical-align:middle; border-radius:4px;">`;
 } else {
     titleArea.textContent = item.name + ' ' + item.emoji;
 }
 
-  // 图片区 — 有图显示图，无图用emoji回退
-  const imgArea = document.getElementById('cardImgArea');
-  if (item.img && item.img.trim() !== '') {
-    imgArea.innerHTML = `<img src="${item.img}" alt="${item.name}" onerror="this.parentElement.innerHTML='<span class=\\'fallback-emoji\\'>${item.fallbackEmoji}</span>'">`;
-  } else {
+// 图片区 - 有图显示图，无图用emoji回退
+const imgArea = document.getElementById('cardImgArea');
+if (item.img && item.img.trim() !== '') {
+    imgArea.innerHTML = `<img src="${item.img}" alt="${item.name}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=\\'fallback-emoji\\'>${item.fallbackEmoji}</span>';">`;
+} else {
     imgArea.innerHTML = `<span class="fallback-emoji">${item.fallbackEmoji}</span>`;
-  }
+}
 
   document.getElementById('cardQuote').innerHTML =
     item.quote +
