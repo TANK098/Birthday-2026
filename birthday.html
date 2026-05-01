@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🎂 5.02 生日快乐</title>
+<style>
+/* ===== 基础重置 & 全局 ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(135deg, #ff9a56 0%, #ff6b8a 50%, #c44bc4 100%);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+/* ===== 场景容器 ===== */
+.scene {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .6s ease, transform .6s ease;
+  transform: scale(0.98);
+  z-index: 1;
+  padding: 20px;
+}
+.scene.active {
+  opacity: 1; pointer-events: auto;
+  transform: scale(1);
+  z-index: 10;
+}
+
+/* ========== 场景1：生日电台（不变） ========== */
+.radio-card {
+  background: rgba(255,255,255,.92);
+  border-radius: 24px;
+  padding: 28px 22px;
+  width: 90%; max-width: 380px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+  text-align: center;
+}
+.radio-title {
+  font-size: 22px; font-weight: 800;
+  color: #d63d66; margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+.progress-section { margin-bottom: 14px; }
+.progress-bar-outer {
+  height: 26px; border-radius: 13px;
+  background: #f0e6e6; overflow: hidden;
+  display: flex; align-items: center;
+  padding: 0 8px; font-size: 11px; color: #999;
+  font-family: monospace; letter-spacing: 1px;
+  position: relative;
+}
+.progress-bar-inner {
+  height: 100%; border-radius: 13px;
+  background: linear-gradient(90deg,#ff6b8a,#c44bc4);
+  width: 0%;
+  transition: width 2s cubic-bezier(.25,.46,.45,.94);
+  position: absolute; left: 0; top: 0;
+}
+.progress-text { position: relative; z-index: 2; width: 100%; text-align: center; }
+.progress-subtitle {
+  font-size: 12px; color: #b88;
+  margin-top: 8px; opacity: 0;
+  animation: fadeUp .8s 2.3s forwards;
+}
+@keyframes fadeUp { to{opacity:1;transform:translateY(-2px)} }
+
+.player-ui {
+  background: linear-gradient(135deg,#1a1a2e,#16213e);
+  border-radius: 16px; padding: 18px 16px;
+  margin-bottom: 22px; color: #fff;
+}
+.player-song { font-size: 13px; color: #aaa; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-song b { color: #fff; }
+.player-timeline { height: 4px; border-radius: 2px; background: #333; position: relative; margin-bottom: 10px; }
+.player-timeline-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg,#ff6b8a,#c44bc4);
+  width: 30%; animation: playPulse 3s infinite ease-in-out;
+}
+@keyframes playPulse { 0%,100%{width:28%} 50%{width:35%} }
+.player-time { font-size: 11px; color: #888; text-align: right; }
+.player-controls { display: flex; justify-content: center; gap: 16px; margin-top: 10px; }
+.play-btn-icon {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg,#ff6b8a,#c44bc4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer;
+  animation: btnGlow 2s infinite alternate;
+}
+@keyframes btnGlow { from{box-shadow:0 0 8px rgba(255,107,138,.4)} to{box-shadow:0 0 20px rgba(196,75,196,.6)} }
+
+.next-btn {
+  background: linear-gradient(135deg,#ff6b8a,#c44bc4,#7b68ee);
+  color: #fff; border: none;
+  border-radius: 50px; padding: 16px 36px;
+  font-size: 17px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 6px 24px rgba(196,75,196,.35);
+  animation: bounceBtn 1.5s infinite; transition: transform .2s;
+}
+.next-btn:active { transform: scale(.95); }
+@keyframes bounceBtn { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+/* ========== 场景2：乌萨奇撒信（重写） ========== */
+.scene2-stage {
+  width: 100%; height: 100%; position: relative;
+  overflow: hidden; max-width: 420px;
+}
+
+/* 乌萨奇角色 - 从左侧跑入，蹦跳到中央偏下 */
+.usagi-runner {
+  font-size: 72px; position: absolute;
+  bottom: -50px; left: -80px;
+  z-index: 15;
+  /* 跑入动画由JS控制触发 */
+}
+/* 乌萨奇真实图片样式 — 放大突出 */
+.usagi-img {
+  width: 140px; height: 140px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(0,0,0,.35));
+  animation: usagiBounce .4s ease-in-out infinite;
+}
+@keyframes usagiBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-12px) scale(1.08); }
+}
+@keyframes usagiRunIn {
+  0%   { left: -80px; bottom: -50px; transform: scaleX(-1) rotate(-10deg); }
+  30%  { left: 35%; bottom: 55%; transform: scaleX(-1) rotate(5deg); }
+  55%  { left: 40%; bottom: 48%; transform: rotate(-3deg); }
+  80%  { left: 38%; bottom: 52%; transform: rotate(2deg); }
+  100% { left: 38%; bottom: 50%; transform: rotate(0) scaleX(1); }
+}
+
+/* 气泡对话框 */
+.speech-bubble-v2 {
+  position: absolute;
+  top: 14%; left: 50%; transform: translateX(-50%);
+  background: #fff; border-radius: 18px;
+  padding: 12px 20px; font-size: 15px; font-weight: 700;
+  color: #333; box-shadow: 0 4px 16px rgba(0,0,0,.14);
+  white-space: nowrap; z-index: 14;
+  opacity: 0;
+}
+.speech-bubble-v2::after {
+  content:''; position: absolute;
+  bottom: -10px; left: 50%; margin-left: -10px;
+  border-width: 10px 10px 0; border-style: solid;
+  border-color: #fff transparent transparent;
+}
+.speech-bubble-v2.show { 
+  animation: bubblePopV2 .5s ease forwards;
+}
+@keyframes bubblePopV2 { to{opacity:1;transform:translateX(-50%) translateY(-6px)} }
+
+/* 信封散落区域 — 绝对定位，散乱分布 */
+.envelopes-scatter {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 5; pointer-events: none;
+}
+/* 单个散落的信封 */
+.scatter-envelope {
+  position: absolute;
+  background: rgba(255,255,255,.9);
+  border-radius: 16px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  min-width: 76px;
+  opacity: 0; transform: translateY(-200px) rotate(var(--rot)) scale(.3);
+  transition: box-shadow .2s, opacity .3s;
+  pointer-events: auto;
+  /* 浮动动画 */
+  animation: scatterFloat 3s ease-in-out infinite;
+  animation-delay: var(--float-delay);
+}
+@keyframes scatterFloat {
+  0%,100% { transform: translateY(0) rotate(var(--rot)); }
+  50%      { transform: translateY(-10px) rotate(calc(var(--rot) + 3deg)); }
+}
+.scatter-envelope:active { transform: scale(.88) rotate(var(--rot)); }
+.scatter-envelope .se-emoji { font-size: 32px; display: block; line-height: 1; margin-bottom: 4px; }
+.scatter-envelope .se-emoji-img {
+  width: 40px; height: 40px;
+  object-fit: contain;
+  display: block; margin: 0 auto 2px;
+}
+.scatter-envelope .se-name { font-size: 11px; color: #666; font-weight: 600; }
+.scatter-envelope.read { opacity: .5; filter: grayscale(.4); }
+.scatter-envelope.read::after {
+  content:'✓'; position:absolute; top:4px; right:6px;
+  color:#4caf50; font-size:16px; font-weight:bold;
+}
+
+/* 信封落下动画 — 由JS动态添加 */
+@keyframes envelopeDrop {
+  0%   { opacity: 0; transform: translateY(-250px) rotate(var(--rot)) scale(.2); }
+  60%  { opacity: 1; transform: translateY(15px) rotate(calc(var(--rot) + 10deg)) scale(1.05); }
+  75%  { transform: translateY(-8px) rotate(calc(var(--rot) - 5deg)) scale(.98); }
+  100% { opacity: 1; transform: translateY(0) rotate(var(--rot)) scale(1); }
+}
+
+/* 乌萨奇退场 */
+.usagi-exit-v2 {
+  animation: usagiExitV2 .8s ease-in forwards;
+}
+@keyframes usagiExitV2 {
+  to { left: 110%; bottom: 30%; opacity: 0; transform: scaleX(-1) rotate(15deg); }
+}
+
+/* 进度点 */
+.progress-dots {
+  position: fixed; top: 16px; right: 16px; z-index: 60;
+  background: rgba(0,0,0,.28); border-radius: 20px;
+  padding: 6px 14px; font-size: 12px; color: #fff; font-weight: 600;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.progress-dots.hidden { display: none; }
+
+/* ========== 场景3：拆信弹窗 ========== */
+.scene3-overlay {
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,.58);z-index:100;
+  display:none;align-items:center;justify-content:center;
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  opacity: 0; transition: opacity .4s;
+}
+.scene3-overlay.show { display:flex; opacity:1; }
+.letter-card {
+  background: linear-gradient(145deg, #fffef8, #fff5e6);
+  border-radius: 20px; width: 92%; max-width: 380px;
+  padding: 22px 18px; max-height: 78vh; overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0,0,0,.3);
+  transform: scale(.5); opacity: 0;
+  animation: cardOpen .5s .1s forwards cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+}
+@keyframes cardOpen { to{transform:scale(1);opacity:1} }
+.letter-card-header { text-align: center; margin-bottom: 12px; }
+.letter-ip-name {
+  font-size: 18px; font-weight: 800; color: #d63d66; margin-bottom: 2px;
+}
+.letter-body-row { display: flex; gap: 12px; align-items: flex-start; }
+/* IP形象区 — 支持真实图片或emoji回退 */
+.letter-img-area {
+  width: 100px; min-height: 100px; flex-shrink: 0;
+  background: linear-gradient(135deg,#ffe8ec,#ffd6e8);
+  border-radius: 14px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.letter-img-area img {
+  width: 100%; height: 100%; object-fit: contain;
+  border-radius: 14px;
+}
+.letter-img-area .fallback-emoji {
+  font-size: 48px; line-height: 1;
+}
+.letter-quote {
+  font-size: 13.5px; line-height: 1.75; color: #555;
+  text-indent: 2em; text-align: justify; flex: 1;
+}
+.letter-close-btn {
+  display: block; margin: 16px auto 0;
+  background: linear-gradient(135deg,#ff6b8a,#c44bc4);
+  color: #fff; border: none; border-radius: 50px;
+  padding: 10px 30px; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.wax-seal {
+  position: absolute; top: -11px; right: -11px;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,#e74c3c,#c0392b);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2);
+  animation: waxBreak .4s 3s forwards; transform-origin: center;
+}
+@keyframes waxBreak {
+  0%{transform:scale(1)rotate(0)} 40%{transform:scale(1.2)rotate(10deg)}
+  70%{transform:scale(.8)rotate(-15deg);opacity:1}
+  100%{transform:scale(0)rotate(30deg);opacity:0}
+}
+
+/* ========== 场景4：最终祝福（优化诗歌排版） ========== */
+.spotlight-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at 50% 35%, rgba(255,220,100,.12), rgba(0,0,0,.72));
+  z-index: 0;
+}
+.scene4-content {
+  position:relative; z-index:2;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding-top: 8vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.typing-text {
+  font-size: 16px; color: #fff; text-align: center;
+  line-height: 1.7; max-width: 320px; margin: 0 auto 16px;
+  text-shadow: 0 2px 8px rgba(0,0,0,.4);
+  min-height: 56px;
+  padding: 0 12px;
+}
+.typing-cursor {
+  display:inline-block;width:2px;height:1em;background:#fff;
+  vertical-align:text-bottom;margin-left:2px;
+  animation: blinkC .7s infinite;
+}
+@keyframes blinkC { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+/* 百字令金字塔 — 紧凑适配手机屏 */
+.poem-container {
+  text-align: center; color: #fff;
+  font-weight: 800; letter-spacing: 2px;
+  text-shadow: 0 2px 10px rgba(0,0,0,.4), 0 0 24px rgba(255,200,100,.25);
+  margin: 0 auto 16px; width: 94%; max-width: 360px;
+  opacity: 0;
+  padding: 0 4px;
+}
+.poem-line {
+  line-height: 1.55;
+  /* 动态字号由JS根据长度设置 */
+  padding: 1px 0;
+}
+.poem-line.highlight { color: #ffd700; text-shadow: 0 0 12px rgba(255,215,0,.5), 0 2px 10px rgba(0,0,0,.4); }
+.poem-line.english { font-style: italic; font-weight: 700; letter-spacing: 1.5px; }
+.poem-signature {
+  font-size: 12px; color: rgba(255,255,255,.65);
+  margin-top: 12px; font-weight: normal; letter-spacing: 1px; margin-bottom: 20px;
+}
+.easter-egg-btn {
+  font-size: 34px; cursor: pointer;
+  animation: scooterWiggle 1.5s infinite ease-in-out;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.3));
+  margin-top: 6px; margin-bottom: 20px;
+}
+@keyframes scooterWiggle {
+  0%,100%{transform:translateX(0) rotate(0)} 25%{transform:translateX(-4px) rotate(-3deg)}
+  75%{transform:translateX(4px) rotate(3deg)}
+}
+.easter-toast {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: linear-gradient(135deg,#fff,#fff8e0);
+  border-radius: 20px; padding: 22px 26px;
+  text-align: center; font-size: 15px; color: #333; line-height: 1.6;
+  box-shadow: 0 16px 48px rgba(0,0,0,.3); z-index: 200;
+  display: none; max-width: 290px; font-weight: 600;
+}
+.easter-toast.show { display:block; animation: toastPop .4s ease; }
+@keyframes toastPop { from{transform:translate(-50%,-50%) scale(.7);opacity:0} to{transform:translate(-50%,-50%) scale(1);opacity:1} }
+.easter-toast .close-toast {
+  margin-top: 12px; background: linear-gradient(135deg,#ff6b8a,#c44bc4);
+  color: #fff; border: none; border-radius: 50px; padding: 8px 24px; font-size: 13px; cursor: pointer;
+}
+
+/* 静音按钮 */
+.mute-btn {
+  position: fixed; top: 16px; left: 16px; z-index: 150;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,.25); border: none; color: #fff; font-size: 20px;
+  cursor: pointer; display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.mute-btn.show { display: flex; }
+
+.tear-effect { position: relative; overflow: hidden; }
+</style>
+</head>
+<body>
+
+<!-- ==================== 场景1：生日电台 ==================== -->
+<div class="scene active" id="scene1">
+  <div class="radio-card">
+    <div class="radio-title">🎂 5.02 今日寿星</div>
+    <div class="progress-section">
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progressFill"></div>
+        <span class="progress-text" id="progressText">░░░░░░░░░░░░░░ 0%</span>
+      </div>
+      <div class="progress-subtitle">今天不加载，只接收快乐 ✨</div>
+    </div>
+    <div class="player-ui">
+      <div class="player-song">正在播放 <b>《Happy Birthday to you》</b></div>
+      <div class="player-timeline"><div class="player-timeline-fill"></div></div>
+      <div class="player-time">●━━━━━─────── 5:20</div>
+      <div class="player-controls">
+        <div class="play-btn-icon">▶</div>
+      </div>
+    </div>
+    <button class="next-btn" onclick="goToScene2()">🎵 按这里，开始拆信</button>
+  </div>
+</div>
+
+<!-- ==================== 场景2：乌萨奇送信（重做） ==================== -->
+<div class="scene" id="scene2">
+  <div class="scene2-stage" id="scene2Stage">
+    <!-- 气泡 -->
+    <div class="speech-bubble-v2" id="speechBubble">呜啦！呀哈！乌萨奇来送信啦！ 💌</div>
+    <!-- 乌萨奇角色 — 使用真实IP图片 -->
+    <div class="usagi-runner" id="usagi">
+      <img src="imgs/Camera_XHS_17776087321301040g00831sq64b0362505okf-removebg-preview.png" alt="乌萨奇" class="usagi-img">
+    </div>
+    <!-- 信封散落区（JS动态填充） -->
+    <div class="envelopes-scatter" id="envelopesScatter"></div>
+  </div>
+  <div class="progress-dots" id="progressDots">
+    <span id="openedCount">0</span> / <span id="totalCount">6</span> 已拆封
+  </div>
+</div>
+
+<!-- ==================== 场景3：拆信弹窗 ==================== -->
+<div class="scene3-overlay" id="letterOverlay" onclick="closeLetter(event)">
+  <div class="letter-card tear-effect" onclick="event.stopPropagation()" id="letterCard">
+    <div class="wax-seal">🔖</div>
+    <div class="letter-card-header">
+      <div class="letter-ip-name" id="cardIpName"></div>
+    </div>
+    <div class="letter-body-row">
+      <div class="letter-img-area" id="cardImgArea"></div>
+      <div class="letter-quote" id="cardQuote"></div>
+    </div>
+    <button class="letter-close-btn" onclick="closeLetter(event)">收起信件 ✉️</button>
+  </div>
+</div>
+
+<!-- ==================== 场景4：最终祝福（优化排版）==================== -->
+<div class="scene" id="scene4">
+  <div class="spotlight-bg"></div>
+  <div class="scene4-content">
+    <div class="typing-text" id="typingText"></div>
+    <div class="poem-container" id="poemContainer"></div>
+    <div class="poem-signature" id="poemSignature"></div>
+    <div class="easter-egg-btn" onclick="showEgg()">🛵</div>
+  </div>
+</div>
+
+<!-- 静音按钮 -->
+<button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+
+<!-- 彩蛋弹窗 -->
+<div class="easter-toast" id="easterToast">
+  🛵 骑上小电驴，烦恼全甩掉<br><br>—— 你永远的后座乘客。
+  <br>
+  <button class="close-toast" onclick="hideEgg()">收到 ❤️</button>
+</div>
+
+<!-- 背景音乐 — 本地文件，放在与HTML同目录下即可 -->
+<audio id="bgm" loop preload="auto">
+  <source src="obj_wo3DlMOGwrbDjj7DisKw_30736695434_60f2_2d7a_c1e9_2a13e42e91f32497c2c35d9745ab0383 (1).mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ============================================================
+// ★ 数据配置 — 所有IP信息集中在此处修改 ★
+// ============================================================
+//
+// 【关于IP图片】
+// 这些IP均为受版权保护的角色，我无法直接提供其官方形象图。
+// 请按以下步骤自行获取透明背景PNG：
+//   ① Google/Pinterest 搜索："小马宝莉 透明底 png"、"chiikawa 乌萨奇 透明素材"
+//   ② 找到喜欢的图片后用 remove.bg 或稿定设计 抠成透明底PNG
+//   ③ 将图片保存到与HTML同目录的 imgs/ 文件夹下
+//   ④ 填写下面的 img 字段为文件名（如 'mlp.png'）
+//
+// 如果没有提供图片，会自动用 emoji 作为 fallback 显示。
+// ============================================================
+
+const IP_DATA = [
+  {
+    name: '小马宝莉',
+    emoji: '🦄',
+    img: 'imgs/IMG_20260430_230658.jpg',          // ← 填写图片路径如 'imgs/mlp.png'，留空则用emoji
+    fallbackEmoji: '🐴',
+    quote: '知道吗，这很怪，不管别人说了多少次，你很棒，但只要你自己心里不觉得，无论多少夸奖都没有意义。有时候要对自己有信心，你就必须抛开过去，这样当你有机会展现自己的时候，你就能点亮整片天空。',
+    from: '—— 所有爱你的小马'
+  },
+  {
+    name: '飞天小女警',
+    emoji: 'imgs/飞天小女警_泡泡.png',
+    img: 'imgs/IMG_20260430_230949.jpg',
+    fallbackEmoji: '👧🏻',
+    quote: '糖，香料，所有美好的事物就是制造完美小女孩的配方。',
+    from: '—— 花花&泡泡&毛毛'
+  },
+  {
+    name: '跃动青春',
+    emoji: 'imgs/鞋子.png',
+    img: 'imgs/IMG_20260430_230933.jpg',
+    fallbackEmoji: '⚽',
+    quote: '活着本来没有什么意义，但是只要活着，就可以找到有趣的事情，就像你发现了花，我又发现了你一样。',
+    from: '—— 跃动青春的大家'
+  },
+  {
+    name: '吉伊卡哇',
+    emoji: '💜',
+    img: 'imgs/IMG_20260430_230626.jpg',
+    fallbackEmoji: '🐰',
+    quote: '无论多少次，我都会为你加油的哦！一起加油吧！',
+    from: '—— 乌萨奇&小八&吉伊'
+  },
+  {
+    name: '美妙天堂',
+    emoji: '✨',
+    img: 'imgs/IMG_20260430_230728.jpg',
+    fallbackEmoji: '🎤',
+    quote: '你只需站在那，便成为我的光。',
+    from: '—— 北条索菲 & 莉安娜'
+  },
+  {
+    name: 'pop子和pipi美',
+    emoji: '😈',
+    img: 'imgs/IMG_20260430_230709.jpg',
+    fallbackEmoji: '😏',
+    quote: '不管发生什么，我们都会陪着你一起搞怪、一起大笑、一起面对这个世界！',
+    from: '—— pop子 & pipi美'
+  }
+];
+
+// 百字令诗行
+const POEM_LINES = [
+  { text: '祝', cls: '' },
+  { text: '前路', cls: '' },
+  { text: '入目处', cls: '' },
+  { text: '皆为坦途', cls: '' },
+  { text: '举杯颂东风', cls: '' },
+  { text: '往事历历在目', cls: '' },
+  { text: '或前路荆棘遍布', cls: '' },
+  { text: '长沟流月尚未迟暮', cls: '' },
+  { text: '寒木春华秋冬夏薄雾', cls: '' },
+  { text: '愿此朝后担风袖月如故', cls: 'highlight' },
+  { text: 'The dream will come true', cls: 'english' },
+  { text: '追风赴月春山平芜', cls: '' },
+  { text: '落霞伴鸢尾起舞', cls: 'highlight' },
+  { text: '三千岁月亘古', cls: '' },
+  { text: '悉人你眉目', cls: '' },
+  { text: '暮云春树', cls: '' },
+  { text: '乐未央', cls: '' },
+  { text: '欢愉', cls: '' },
+  { text: '渡', cls: '' },
+  { text: '- To you -', cls: 'english highlight', isSignature: true }
+];
+
+// ============ 状态变量 ============
+let openedCount = 0;
+let bgmPlaying = false;
+let muted = false;
+const bgm = document.getElementById('bgm');
+
+// ============ 页面加载 → 进度条动画 ============
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const fill = document.getElementById('progressFill');
+    const txt = document.getElementById('progressText');
+    fill.style.width = '19%';
+    let p = 0;
+    const interval = setInterval(() => {
+      if (p >= 19) { clearInterval(interval); return; }
+      p++;
+      const filled = Math.floor(p / 1.58);
+      const empty = 12 - filled;
+      txt.textContent = '▓'.repeat(filled) + '░'.repeat(empty) + ' ' + p + '%';
+    }, 105);
+  }, 500);
+});
+
+// ============ 场景切换：1 → 2 ============
+function goToScene2() {
+  initBGM();
+  document.getElementById('scene1').classList.remove('active');
+  setTimeout(() => {
+    document.getElementById('scene2').classList.add('active');
+    playScene2Animation();
+  }, 600);
+}
+
+// ============ 场景2完整动画流程 ============
+function playScene2Animation() {
+  const usagi = document.getElementById('usagi');
+  const bubble = document.getElementById('speechBubble');
+
+  // Step 1: 乌萨奇跑入
+  usagi.style.animation = 'usagiRunIn 1.4s cubic-bezier(.34,1.56,.64,1) forwards';
+
+  // Step 2: 气泡出现
+  setTimeout(() => { bubble.classList.add('show'); }, 1200);
+
+  // Step 3: 撒信！信封逐个从天而降散落到随机位置
+  setTimeout(() => { scatterEnvelopes(); }, 2400);
+
+  // Step 4: 气泡消失
+  setTimeout(() => { bubble.style.opacity = '0'; }, 4000);
+
+  // Step 5: 乌萨奇退场
+  setTimeout(() => {
+    usagi.classList.add('usagi-exit-v2');
+  }, 4500);
+}
+
+// ============ 散落信封 — 核心逻辑 ============
+function scatterEnvelopes() {
+  const container = document.getElementById('envelopesScatter');
+  container.innerHTML = '';
+
+  // 预定义6个散落位置（屏幕百分比坐标），看起来自然错落
+  // 格式: [left%, top%, rotation°]
+  const positions = [
+    [12, 52, -12],   // 左上区域
+    [62, 46,   8],   // 右上区域
+    [36, 68,  -5],   // 左中
+    [74, 66,  15],   // 右中
+    [18, 82, -18],   // 左下
+    [54, 84,   6]    // 中下偏右
+  ];
+
+  IP_DATA.forEach((item, idx) => {
+    const pos = positions[idx];
+    const rot = pos[2] + (Math.random() * 10 - 5); // 加点随机扰动
+
+    const div = document.createElement('div');
+    div.className = 'scatter-envelope';
+    div.dataset.idx = idx;
+
+    // CSS自定义属性用于动画
+    div.style.setProperty('--rot', rot + 'deg');
+    div.style.setProperty('--float-delay', (idx * 0.3) + 's');
+
+    // 初始位置设在天外
+    div.style.left = pos[0] + '%';
+    div.style.top = pos[1] + '%';
+
+    // 自动判断：emoji字段是图片路径还是emoji字符
+    const isImg = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(item.emoji);
+    const emojiHtml = isImg
+      ? `<img src="${item.emoji}" alt="${item.name}" class="se-emoji-img" onerror="this.parentElement.innerHTML='<span class=\\'fallback-emoji\\'>${item.fallbackEmoji}</span>'">`
+      : item.emoji;
+
+    div.innerHTML = `
+      <span class="se-emoji">${emojiHtml}</span>
+      <span class="se-name">${item.name}</span>`;
+
+    div.onclick = function() { openLetter(idx); };
+
+    container.appendChild(div);
+
+    // 错开时间依次落下
+    setTimeout(() => {
+      div.style.animation = `envelopeDrop .7s cubic-bezier(.25,.46,.45,.94) forwards,
+                              scatterFloat 3s ${idx * 0.3}s ease-in-out infinite`;
+    }, idx * 180); // 每个间隔180ms
+  });
+}
+
+// ============ 拆信 ============
+let currentActiveEnv = null;
+
+function openLetter(idx) {
+  const item = IP_DATA[idx];
+  const overlay = document.getElementById('letterOverlay');
+  const card = document.getElementById('letterCard');
+
+  // 重置卡片动画
+  card.style.animation = 'none';
+  void card.offsetHeight;
+  card.style.animation = '';
+  const wax = card.querySelector('.wax-seal');
+  wax.style.animation = 'none';
+  void wax.offsetHeight;
+  wax.style.animation = '';
+
+  // 标记当前激活的信封
+  currentActiveEnv = document.querySelector(`.scatter-envelope[data-idx="${idx}"]`);
+  if (currentActiveEnv) {
+    document.querySelectorAll('.scatter-envelope').forEach(e => e.classList.remove('active-env'));
+    currentActiveEnv.classList.add('active-env');
+  }
+
+  // 填充内容
+  document.getElementById('cardIpName').textContent = item.name + ' ' + item.emoji;
+
+  // 图片区 — 有图显示图，无图用emoji回退
+  const imgArea = document.getElementById('cardImgArea');
+  if (item.img && item.img.trim() !== '') {
+    imgArea.innerHTML = `<img src="${item.img}" alt="${item.name}" onerror="this.parentElement.innerHTML='<span class=\\'fallback-emoji\\'>${item.fallbackEmoji}</span>'">`;
+  } else {
+    imgArea.innerHTML = `<span class="fallback-emoji">${item.fallbackEmoji}</span>`;
+  }
+
+  document.getElementById('cardQuote').innerHTML =
+    item.quote +
+    '<br><br><span style="font-size:11.5px;color:#999;text-align:right;display:block;">' +
+    item.from + '</span>';
+
+  overlay.classList.add('show');
+}
+
+function closeLetter(e) {
+  if (e) e.stopPropagation();
+  const overlay = document.getElementById('letterOverlay');
+  if (!overlay.classList.contains('show')) return;
+  overlay.classList.remove('show');
+
+  // 标记已读
+  if (currentActiveEnv && !currentActiveEnv.classList.contains('read')) {
+    currentActiveEnv.classList.add('read');
+    openedCount++;
+    document.getElementById('openedCount').textContent = openedCount;
+
+    if (openedCount >= IP_DATA.length) {
+      setTimeout(goToScene4, 800);
+    }
+  }
+  currentActiveEnv = null;
+}
+
+// ============ 场景切换：2 → 4 ============
+function goToScene4() {
+  document.getElementById('scene2').classList.remove('active');
+  document.getElementById('progressDots').classList.add('hidden');
+  setTimeout(() => {
+    document.getElementById('scene4').classList.add('active');
+    document.getElementById('muteBtn').classList.add('show');
+    startTypingAndPoem();
+  }, 600);
+}
+
+// ============ 打字机效果 + 百字令（紧凑排版版）============
+function startTypingAndPoem() {
+  const msg = '想要说"喜欢你"的同时也想说"谢谢你"，祝你生日快乐，我的朋友！';
+  const el = document.getElementById('typingText');
+  let i = 0;
+  const typeInterval = setInterval(() => {
+    if (i < msg.length) {
+      el.innerHTML = msg.substring(0, i+1) + '<span class="typing-cursor">|</span>';
+      i++;
+    } else {
+      clearInterval(typeInterval);
+      el.innerHTML = msg;
+      renderPoem();
+    }
+  }, 90);
+}
+
+function renderPoem() {
+  const container = document.getElementById('poemContainer');
+  container.innerHTML = '';
+  container.style.opacity = '1'; // 直接可见，靠每行动画
+
+  POEM_LINES.forEach((line, idx) => {
+    const div = document.createElement('div');
+    div.className = 'poem-line ' + (line.cls || '');
+    div.textContent = line.text;
+
+    // 根据文字长度动态调整字体大小 — 确保手机屏装得下
+    const len = line.text.length;
+    let fontSize = 15; // 默认
+    if (len > 10) fontSize = 12.5;
+    else if (len > 7) fontSize = 13.5;
+    else if (len <= 2) fontSize = 17;
+    div.style.fontSize = fontSize + 'px';
+
+    div.style.opacity = '0';
+    div.style.transform = 'translateY(10px)';
+    container.appendChild(div);
+
+    // 逐行浮现
+    setTimeout(() => {
+      div.style.transition = 'all .35s ease';
+      div.style.opacity = '1';
+      div.style.transform = 'translateY(0)';
+    }, idx * 110); // 缩短间距让整体更紧凑
+  });
+
+  // 署名
+  setTimeout(() => {
+    const sig = document.getElementById('poemSignature');
+    sig.textContent = '—— 写在 2026 年 5月2日 ——';
+    sig.style.opacity = '0';
+    sig.style.transition = 'opacity .6s';
+    requestAnimationFrame(() => { sig.style.opacity = '1'; });
+  }, POEM_LINES.length * 110 + 400);
+}
+
+// ============ 彩蛋 ============
+function showEgg() { document.getElementById('easterToast').classList.add('show'); }
+function hideEgg() { document.getElementById('easterToast').classList.remove('show'); }
+
+// ============ BGM 控制 — 使用可公开访问的音频源 ============
+function initBGM() {
+  if (bgmPlaying) return;
+  bgm.volume = 0.5;
+
+  // 尝试多种方式播放
+  const tryPlay = () => {
+    const promise = bgm.play();
+    if (promise !== undefined) {
+      promise.then(() => { bgmPlaying = true; })
+            .catch(err => console.log('BGM需用户交互触发:', err));
+    } else {
+      bgmPlaying = true;
+    }
+  };
+
+  // 如果当前src不可用，尝试备用方案
+  // 公共域/免费可商用的 Happy Birthday 音频替代
+  tryPlay();
+}
+
+function toggleMute() {
+  muted = !muted;
+  bgm.muted = muted;
+  document.getElementById('muteBtn').textContent = muted ? '🔇' : '🔊';
+}
+
+// ============ 微信兼容 ============
+if (typeof WeixinJSBridge !== 'undefined') {
+  WeixinJSBridge.invoke('getNetworkType', {}, () => bgm.load());
+}
+document.addEventListener('WeixinJSBridgeReady', () => bgm.load(), false);
+
+// 全局点击兜底
+document.body.addEventListener('click', function firstClick() {
+  initBGM();
+  document.body.removeEventListener('click', firstClick);
+}, { once: true });
+
+// ============ 辅助：检测是否在微信中 ============
+function isWechat() {
+  return /MicroMessenger/i.test(navigator.userAgent);
+}
+</script>
+</body>
+</html>
